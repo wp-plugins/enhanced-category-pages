@@ -1,0 +1,15 @@
+body.post-php.post-type-enhancedcategory #delete-action {
+	display: none;
+}
+
+body.post-php.post-type-enhancedcategory .add-new-h2 {
+	display:none;
+}
+
+body.post-php.post-type-enhancedcategory #edit-slug-box {
+	display:none;
+}
+
+body.post-php.post-type-enhancedcategory .add-new-h2.back-to-categories {
+	display: inline-block;
+}
