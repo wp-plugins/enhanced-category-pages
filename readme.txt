@@ -4,7 +4,7 @@ Tags: categories, page, enhanced, custom post, custom post type, category, featu
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7K3XA4WQ2BUVJ&lc=US&item_name=Enhanced%20Category%20Wordpress%20Plugin&item_number=Support%20Open%20Source&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.0.1
 Tested up to: 4.1
-Stable tag: 0.1
+Stable tag: 0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,5 +84,14 @@ Enhanced Category Pages allows you to create custom category pages and manage th
 4. Category public view
 
 == Changelog ==
+
 = 0.1 =
 * Initial release.
+
+= 0.2 =
+* Make php 5.3 compatible.
+
+== Upgrade Notice ==
+
+= 0.2 =
+* This version adds support for 5.3

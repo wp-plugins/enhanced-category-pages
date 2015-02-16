@@ -184,7 +184,8 @@ class Enhanced_Category extends WP_Custom_Post {
 		//get global category id
 		$cur_cat_id = get_cat_id(single_cat_title("", false));
 
-		$ec_object = $this->get_by_category($cur_cat_id)[0];
+		$ec_array = $this->get_by_category($cur_cat_id);
+		$ec_object = $ec_array[0];
 
 		//setup ehanced category as global post
 		setup_postdata($post = $ec_object);
