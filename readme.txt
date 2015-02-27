@@ -1,10 +1,10 @@
 === Enhanced Category Pages ===
 Contributors: cip, dioneea
-Tags: categories, page, enhanced, custom post, custom post type, category, featured image,
+Tags: categories, taxonomy, term, page, enhanced, custom post, custom post type, category, featured image
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7K3XA4WQ2BUVJ&lc=US&item_name=Enhanced%20Category%20Wordpress%20Plugin&item_number=Support%20Open%20Source&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.0.1
-Tested up to: 4.1
-Stable tag: 0.2
+Tested up to: 4.1.1
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,10 +12,11 @@ Create custom enhanced pages for categories and manage category page as any cust
 
 == Description ==
 
-Enhanced Category Pages allows you to create custom category pages and manage them by a special custom post type.
+Enhanced Category Pages allows you to create custom category and term pages by managing them using a special custom post type.
 
 **Features**
 
+* **NEW** Enhance any taxonomy: edit a term from **any taxonomy** as a custom post
 * edit category as a custom post - *Enhanced Category*
 * automatically generates *Enhanced Category* post type for each category
 * transparent synchronization of *Enhanced Category* and it's corresponding category
@@ -27,8 +28,6 @@ Enhanced Category Pages allows you to create custom category pages and manage th
 
 * customize *Enhanced Category* custom post type capabilities via plugin options
 * manual selection on enhanced categories
-* enhance any taxonomy
-
 
 
 == Installation ==
@@ -91,7 +90,14 @@ Enhanced Category Pages allows you to create custom category pages and manage th
 = 0.2 =
 * Make php 5.3 compatible.
 
+= 1.0 =
+* Enhance any taxonomy
+
+
 == Upgrade Notice ==
 
 = 0.2 =
 * This version adds support for 5.3
+
+= 1.0 =
+* Enhance a term from any taxonomy

@@ -53,16 +53,16 @@ abstract class WP_Custom_Post {
 
 		$messages[$this->get_safe_name()] = array(
 			0 => '', // Unused. Messages start at index 1.
-			1 => $this->translate('%s updated. <!--a href="%s">View  %s</a-->', $_uname, esc_url(get_permalink($post_ID)), $this->_name),
+			1 => $this->translate('Successfully updated. <!--a href="%s">View</a-->', $_uname, esc_url(get_permalink($post_ID)), $this->_name),
 			2 => __('Custom field updated.'),
 			3 => __('Custom field deleted.'),
-			4 => $this->translate('%s updated', $_uname),
-			5 => isset($_GET['revision']) ? $this->translate('%s restored to revision from %s', $_uname, wp_post_revision_title((int) $_GET['revision'], false)) : false,
-			6 => $this->translate('%s published. <a href="%s">View %s</a>', $_uname, esc_url(get_permalink($post_ID)), $this->_name),
-			7 => $this->translate('%s saved.', $_uname),
-			8 => $this->translate('%s submitted. <a target="_blank" href="%s">Preview %s</a>', $_uname, esc_url(add_query_arg('preview', 'true', get_permalink($post_ID))), $this->_name),
-			9 => $this->translate('%s scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview %s</a>', $_uname, date_i18n(__('M j, Y @ G:i'), strtotime($post->post_date)), esc_url(get_permalink($post_ID)), $this->_name),
-			10 => $this->translate('%s draft updated. <a target="_blank" href="%s">Preview %s</a>', $_uname, esc_url(add_query_arg('preview', 'true', get_permalink($post_ID))), $this->_name),
+			4 => $this->translate('Successfully updated', $_uname),
+			5 => isset($_GET['revision']) ? $this->translate('Restored to revision from %s', $_uname, wp_post_revision_title((int) $_GET['revision'], false)) : false,
+			6 => $this->translate('Published. <a href="%s">View</a>', $_uname, esc_url(get_permalink($post_ID)), $this->_name),
+			7 => $this->translate('Saved.', $_uname),
+			8 => $this->translate('Submitted. <a target="_blank" href="%s">Preview</a>', $_uname, esc_url(add_query_arg('preview', 'true', get_permalink($post_ID))), $this->_name),
+			9 => $this->translate('Scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview</a>', $_uname, date_i18n(__('M j, Y @ G:i'), strtotime($post->post_date)), esc_url(get_permalink($post_ID)), $this->_name),
+			10 => $this->translate('Draft updated. <a target="_blank" href="%s">Preview</a>', $_uname, esc_url(add_query_arg('preview', 'true', get_permalink($post_ID))), $this->_name),
 		);
 
 		return $messages;

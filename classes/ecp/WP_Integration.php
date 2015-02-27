@@ -47,6 +47,7 @@ class WP_Integration {
 		  id bigint(9) UNSIGNED NOT NULL AUTO_INCREMENT,
 		  category_id bigint(9) UNSIGNED NOT NULL UNIQUE,
 		  post_id bigint(9) UNSIGNED NOT NULL UNIQUE,
+		  taxonomy varchar(100) NOT NULL,
 		  PRIMARY KEY  id (id)
 		) $charset_collate;";
 
@@ -69,43 +70,95 @@ class WP_Integration {
 
 		add_action("init", array(&$this, "register_custom_post"));
 		add_filter("tag_row_actions", array(&$this, 'add_ec_edit_link'), 10, 2);
-		add_action("create_category", array(&$this, 'add_category'));
-		add_action('edit_category_form_fields', array(&$this, 'category_edit_form_fields'));
+		add_action("create_term", array(&$this, 'add_category'), 10, 3);
+
 		add_action("pre_delete_term", array(&$this, 'delete_category'), 10, 2);
-		add_action("edited_category", array(&$this, 'update_category'));
+		add_action("edited_term", array(&$this, 'update_category'), 10, 3);
 		add_action("post_updated", array(&$this, 'update_post'));
 		//customize admin area
-		add_action("admin_init", array(&$this, 'admin_init'));
+		add_action("admin_init", array(&$this, 'admin_init'), 10000);
 	}
 
 	public function category_edit_form_fields($tag) {
 		$url = $this->get_enhanced_category_edit_url($tag);
 		echo '<input type="hidden" id="enhanced_category_edit_url" value="' . esc_url($url) . '" />';
+
+		$enhanced_edit_text = __("Enhanced Edit", $this->_translation_domain);
+		echo <<<STR
+				<script type="text/javascript">
+					(function($) {
+						var url = $('#enhanced_category_edit_url').val();
+						if (url) {
+							$('.edit-tags-php .wrap > h2').append(
+								'<a href="' + url + '" class="add-new-h2 back-to-categories">{$enhanced_edit_text}</a>'
+								);
+						}
+					})(jQuery);
+				</script>
+
+STR;
+
 	}
 
 	public function admin_init() {
 		add_action("admin_head", array(&$this, 'admin_head'));
 
 		$this->register_scripts();
+
+
+		//register for all taxonomies
+		$taxonomies = $this->get_enabled_taxonomies();
+
+		//add hidden input url on edit term page
+		foreach ($taxonomies as $taxonomy_name) {
+			add_action("{$taxonomy_name}_edit_form_fields", array(&$this, 'category_edit_form_fields'));
+		}
+
+
+		//add hidden link to go back to taxonomy list edit
+		add_action('edit_form_top', array(&$this, 'ecp_edit_back_taxonomy'));
+
+	}
+
+	public function ecp_edit_back_taxonomy($post) {
+
+		//do only for ecp  posts
+		if ( $post->post_type == $this->_enhanced_category->get_safe_name()) {
+
+			$post_id = $post->ID;
+			$category = $this->_enhanced_category->get_by_post($post_id);
+			$taxonomy = get_taxonomy($category->taxonomy);
+
+			$a = '<a class="add-new-h2 back-to-categories" href="'
+				. esc_url(admin_url("edit-tags.php?taxonomy={$category->taxonomy}")) . '">'
+				. __("Back to {$taxonomy->labels->name}", $this->_translation_domain) . "</a>";
+
+			echo '<input type="hidden" id="enhanced_category_list_edit_url" value="' . htmlentities($a) . '" />';
+
+			echo '<input type="hidden" id="taxonomy_single_name" value="' . htmlentities($taxonomy->labels->singular_name) . '" />';
+
+			//HACK: added here for responsivness - no delay when replacing
+			$post_type_name = $post->post_type;
+			echo <<<STR
+					<script type="text/javascript">
+						(function($) {
+							$('.post-php.post-type-{$post_type_name} .wrap > h2').append(
+										$('#enhanced_category_list_edit_url').val()
+							);
+
+							//replace taxonomy Category with custom taxonomy name
+							var h2 = $('h2');
+							var html = h2.html().replace('Category', $('#taxonomy_single_name').val());
+							h2.html(html);
+						})(jQuery);
+					</script>
+
+STR;
+		}
 	}
 
 	public function register_scripts() {
-		// Register the script
-		$js_handle = 'ecp-admin';
-
-		wp_register_script($js_handle, $this->_plugin_url . '/scripts/admin.js');
-
-		// Localize the script with new data
-		$translation_array = array(
-			'back_to_categories' => __('Back to categories', $this->_translation_domain),
-			'back_to_categories_url' => esc_url(admin_url("edit-tags.php?taxonomy=category")),
-			'post_type_name' => $this->_enhanced_category->get_safe_name(),
-			'edit_enhanced' => __("Enhanced Edit", $this->_translation_domain),
-		);
-
-		wp_localize_script($js_handle, 'ecp_js_l10n', $translation_array);
-
-		wp_enqueue_script($js_handle);
+		//EMPTY since 1.0
 	}
 
 	public function admin_head() {
@@ -113,6 +166,7 @@ class WP_Integration {
 	}
 
 	public function register_custom_post() {
+
 		$this->_enhanced_category = new Enhanced_Category($this->_translation_domain, $this->_table_name);
 
 		if (is_callable($this->_after_init_callback)) {
@@ -122,11 +176,9 @@ class WP_Integration {
 
 	public function add_ec_edit_link($actions, $tag) {
 
-		if ($tag->taxonomy !== 'category') {
-			return $actions;
+		if ($this->is_valid_taxonomy($tag->taxonomy)) {
+			$actions['_enhanced_category_edit'] = $this->get_enhanced_category_edit_link($tag);
 		}
-
-		$actions['_enhanced_category_edit'] = $this->get_enhanced_category_edit_link($tag);
 
 		return $actions;
 	}
@@ -138,7 +190,7 @@ class WP_Integration {
 	private function get_enhanced_category_edit_url($tag) {
 		$url = "";
 
-		$post_id = $this->_enhanced_category->get_first_or_create_for_category($tag->term_id);
+		$post_id = $this->_enhanced_category->get_first_or_create_for_category($tag->term_id, $tag->taxonomy);
 
 		if (!empty($post_id)) {
 			$url = admin_url("post.php?post={$post_id}&action=edit");
@@ -147,20 +199,19 @@ class WP_Integration {
 		return $url;
 	}
 
-	public function add_category($category_id) {
-		$cat = get_category($category_id);
-		return $this->_enhanced_category->add_new_from_category($cat);
+	public function add_category($term_id, $tt_id, $taxonomy) {
+
+		$term = get_term($term_id, $taxonomy);
+
+		return $this->_enhanced_category->add_new_from_category($term);
 	}
 
 	public function delete_category($category_id, $taxonomy) {
-		if ($taxonomy !== 'category') {
-			return;
-		}
-		$this->_enhanced_category->delete_category($category_id);
+		$this->_enhanced_category->delete_category($category_id, $taxonomy);
 	}
 
-	public function update_category($category_id) {
-		$cat = get_category($category_id);
+	public function update_category($category_id, $tt_id, $taxonomy) {
+		$cat = get_term($category_id, $taxonomy);
 
 		//always update title and slug using the category
 		$this->_enhanced_category->update_from_category($cat);
@@ -171,5 +222,22 @@ class WP_Integration {
 		if ($post->post_type === $this->_enhanced_category->get_safe_name()) {
 			$this->_enhanced_category->update_from_post($post_id);
 		}
+	}
+
+	//returns all taxonomies that are enabled for this plugin to enhance
+	private function get_enabled_taxonomies() {
+
+		//get taxonomies names
+		$taxonomies = get_taxonomies(NULL, 'names');
+
+		$taxonomies  = array_filter($taxonomies, array($this, 'is_valid_taxonomy'));
+
+		return $taxonomies;
+	}
+
+	private function is_valid_taxonomy($taxonomy_name) {
+		//always true for the moment
+		//TODO: should check the user settings
+		return true;
 	}
 }

@@ -29,23 +29,25 @@ class Enhanced_Category extends WP_Custom_Post {
 
 		$post = array(
 			'post_name' => $cat->slug,
-			'post_title' => $cat->cat_name,
+			'post_title' => $cat->name,
 			#'post_category' => array($cat->cat_ID),
 			'post_status' => 'publish',
 			'post_type' => $this->_name,
-			'post_content' => $cat->category_description,
-			'post_excerpt' => $cat->category_description,
+			'post_content' => $cat->description,
+			'post_excerpt' => $cat->description,
 		);
+
+		//var_dump($cat);die;
 
 		$post_id = wp_insert_post($post, false);
 
 		//insert into correlation table
-		$this->_insert_into_ecp_x_category($cat->cat_ID, $post_id);
+		$this->_insert_into_ecp_x_category($cat->term_id, $post_id, $cat->taxonomy);
 
 		return $post_id;
 	}
 
-	private function _insert_into_ecp_x_category($cat_id, $post_id) {
+	private function _insert_into_ecp_x_category($cat_id, $post_id, $taxonomy) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . $this->_table_categories_posts;
 		if ($cat_id > 0 && $post_id > 0) {
@@ -54,13 +56,14 @@ class Enhanced_Category extends WP_Custom_Post {
 				array(
 					'category_id' => $cat_id,
 					'post_id' => $post_id,
+					'taxonomy' => $taxonomy
 				)
 			);
 		}
 	}
 
-	public function delete_category($cat_id) {
-		$post_id = $this->get_first_or_create_for_category($cat_id);
+	public function delete_category($cat_id, $taxonomy) {
+		$post_id = $this->get_first_or_create_for_category($cat_id, $taxonomy);
 		if ($post_id > 0) {
 			wp_delete_post($post_id, true);
 			$this->_delete_correlation($cat_id);
@@ -81,19 +84,42 @@ class Enhanced_Category extends WP_Custom_Post {
 
 		global $wpdb;
 
-		$category = null;
-
-		$category_id = $wpdb->get_var($wpdb->prepare(
+		$category = $wpdb->get_row($wpdb->prepare(
 			"
-				SELECT category_id
+				SELECT category_id, taxonomy
 				FROM {$wpdb->prefix}{$this->_table_categories_posts}
 				WHERE post_id = %d
 			",
 			$post_id
 		));
 
-		return $category_id;
+		//requried by update from 0.2 to 1.0
+		//fill empty taxonomy name
+		if (empty($category->taxonomy)) {
+			$category->taxonomy = $this->fill_empty_taxonomy($category->category_id);
+		}
 
+		return $category;
+	}
+
+	private function fill_empty_taxonomy($category_id) {
+
+		global $wpdb;
+
+		$taxonomy = $wpdb->get_var($wpdb->prepare(
+			"
+				SELECT taxonomy
+				FROM {$wpdb->prefix}term_taxonomy
+				WHERE term_id = %d
+			",
+			$category_id
+		));
+
+		if ( !empty($taxonomy) ) {
+			$wpdb->update( $wpdb->prefix.$this->_table_categories_posts, array('taxonomy' => $taxonomy), array('category_id' => $category_id) );
+		}
+
+		return $taxonomy;
 	}
 
 	//get the ecp for the category id
@@ -103,14 +129,22 @@ class Enhanced_Category extends WP_Custom_Post {
 
 		$posts_array = array();
 
-		$post_id = $wpdb->get_var($wpdb->prepare(
+		$categories_posts_row = $wpdb->get_var($wpdb->prepare(
 			"
-				SELECT post_id
+				SELECT post_id, taxonomy
 				FROM {$wpdb->prefix}{$this->_table_categories_posts}
 				WHERE category_id = %d
 			",
 			$category_id
 		));
+
+		$post_id = $categories_posts_row->post_id;
+
+		//requried by update from 0.2 to 1.0
+		//fill empty taxonomy name
+		if (empty($categories_posts_row->taxonomy)) {
+			$this->fill_empty_taxonomy($category_id);
+		}
 
 		if (!empty($post_id)) {
 			$posts_array = get_posts(array(
@@ -122,13 +156,13 @@ class Enhanced_Category extends WP_Custom_Post {
 		return $posts_array;
 	}
 
-	public function get_first_or_create_for_category($category_id) {
+	public function get_first_or_create_for_category($category_id, $taxonomy) {
 
 		$posts_array = $this->get_by_category($category_id);
 
 		if (empty($posts_array)) {
 			//if the post does not already exist, we create it
-			$cat = get_category($category_id);
+			$cat = get_term($category_id, $taxonomy);
 			$post_id = $this->add_new_from_category($cat);
 		} else {
 			$post_id = $posts_array[0]->ID;
@@ -142,18 +176,18 @@ class Enhanced_Category extends WP_Custom_Post {
 			return;
 		}
 		$post = get_post($post_id);
-		$category_id = $this->get_by_post($post_id);
+		$category_r = $this->get_by_post($post_id);
 
-		if ($category_id > 0) {
+		if (!empty($category_r)) {
 			$category = array(
-				'cat_ID' => $category_id,
-				'category_nicename' => $post->post_name,
-				'cat_name' => $post->post_title,
-				'category_description' => $post->post_excerpt,
+				'term_id' => $category_r->category_id,
+				'slug' => $post->post_name,
+				'name' => $post->post_title,
+				'description' => $post->post_excerpt,
 			);
 
 			$this->_prevent_update = true;
-			wp_update_category($category);
+			wp_update_term($category_r->category_id, $category_r->taxonomy, $category);
 		}
 	}
 
@@ -162,14 +196,14 @@ class Enhanced_Category extends WP_Custom_Post {
 		if ($this->_prevent_update) {
 			return;
 		}
-		$post_id = $this->get_first_or_create_for_category($category->term_id);
+		$post_id = $this->get_first_or_create_for_category($category->term_id, $category->taxonomy);
 
 		if ($post_id > 0) {
 			$post = array(
 				'ID' => $post_id,
 				'post_name' => $category->slug,
-				'post_title' => $category->cat_name,
-				'post_excerpt' => $category->category_description,
+				'post_title' => $category->name,
+				'post_excerpt' => $category->description,
 			);
 
 			$this->_prevent_update = true;

@@ -3,7 +3,7 @@
 Plugin Name: Enhanced Category Pages
 Description: Create custom enhanced pages for categories. Manage category page as a custom post.
 Author: Ciprian Amariei, Diana Amitroaei
-Version: 0.2
+Version: 1.0
 Text Domain: enhanced-category-pages
 Text Path: languages
  */
