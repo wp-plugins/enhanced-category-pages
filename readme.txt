@@ -35,9 +35,9 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 2. Upload and uncompress it in "/wp-content/plugins/" directory.
 3. Activate the plugin through the "Plugins" menu in WordPress.
 4. Use "Enhanced Edit" link to edit the page of the respective category
-5. Edit **category template** to show the content of the "Enhanced Category":
+5. Edit **category/taxonomy template** to show the content of the "Enhanced Category":
 `
-    //in category.php
+    //in category.php or taxonomy.php
     <?php
         global $enhanced_category;
         //get enhanced category post and set it up as global current post
@@ -69,7 +69,7 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 
 = What happens if I edit the category fields? =
 
-*Enhanced Category* post (ECP) is synchronized in both directions with it's corresponding category i.e. category name - ECP title, category slug - ECP slug, category description - ECP excerpt.
+*Enhanced Category* Post (ECP) is synchronized in both directions with it's corresponding category i.e. category name - ECP title, category slug - ECP slug, category description - ECP excerpt.
 
 = What happens with *Enhanced Category* posts when the plugin is uninstalled? =
 
