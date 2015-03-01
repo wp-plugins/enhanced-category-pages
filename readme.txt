@@ -4,11 +4,11 @@ Tags: categories, taxonomy, term, page, enhanced, custom post, custom post type,
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7K3XA4WQ2BUVJ&lc=US&item_name=Enhanced%20Category%20Wordpress%20Plugin&item_number=Support%20Open%20Source&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Requires at least: 3.0.1
 Tested up to: 4.1.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Create custom enhanced pages for categories and terms of any taxonomy and manage them as a custom post.
+Create custom enhanced pages for categories and any taxonomy term and manage them as a custom post.
 
 == Description ==
 
@@ -16,7 +16,7 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 
 **Features**
 
-* **NEW** Enhance any taxonomy: edit a term from **any taxonomy** as a custom post
+* **NEW** Enhance any taxonomy: edit **any taxonomy** term as a custom post
 * edit category as a custom post - *Enhanced Category*
 * automatically generates *Enhanced Category* post type for each category
 * transparent synchronization of *Enhanced Category* and it's corresponding category
@@ -93,6 +93,9 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 = 1.0 =
 * Enhance any taxonomy
 
+= 1.0.1 =
+* bug fixing
+
 
 == Upgrade Notice ==
 
@@ -101,3 +104,6 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 
 = 1.0 =
 * Enhance a term from any taxonomy
+
+= 1.0.1 =
+* Bugs fixed

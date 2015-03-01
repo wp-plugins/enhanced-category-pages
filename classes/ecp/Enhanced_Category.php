@@ -129,7 +129,7 @@ class Enhanced_Category extends WP_Custom_Post {
 
 		$posts_array = array();
 
-		$categories_posts_row = $wpdb->get_var($wpdb->prepare(
+		$categories_posts_row = $wpdb->get_row($wpdb->prepare(
 			"
 				SELECT post_id, taxonomy
 				FROM {$wpdb->prefix}{$this->_table_categories_posts}
@@ -159,7 +159,6 @@ class Enhanced_Category extends WP_Custom_Post {
 	public function get_first_or_create_for_category($category_id, $taxonomy) {
 
 		$posts_array = $this->get_by_category($category_id);
-
 		if (empty($posts_array)) {
 			//if the post does not already exist, we create it
 			$cat = get_term($category_id, $taxonomy);
@@ -215,8 +214,16 @@ class Enhanced_Category extends WP_Custom_Post {
 	//gets global current category and setup the global post data
 	public function setup_ec_data() {
 		global $withcomments, $post;
-		//get global category id
-		$cur_cat_id = get_cat_id(single_cat_title("", false));
+		//get global category/term id
+
+		$query_var = get_query_var("taxonomy");
+
+		if ( empty($query_var) ) {
+			$cur_cat_id	= get_cat_id(single_cat_title("", false));
+		} else {
+			$term = get_term_by('slug', get_query_var("term"), $query_var);
+			$cur_cat_id = $term->term_id;
+		}
 
 		$ec_array = $this->get_by_category($cur_cat_id);
 		$ec_object = $ec_array[0];
