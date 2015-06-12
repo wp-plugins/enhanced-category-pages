@@ -16,7 +16,8 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 
 **Features**
 
-* **NEW** Enhance any taxonomy: edit **any taxonomy** term as a custom post
+* **NEW** Traverse categories using setup_ec_data that allows now category id as parameter
+* Enhance any taxonomy: edit **any taxonomy** term as a custom post
 * edit category as a custom post - *Enhanced Category*
 * automatically generates *Enhanced Category* post type for each category
 * transparent synchronization of *Enhanced Category* and it's corresponding category
@@ -35,31 +36,45 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 2. Upload and uncompress it in "/wp-content/plugins/" directory.
 3. Activate the plugin through the "Plugins" menu in WordPress.
 4. Use "Enhanced Edit" link to edit the page of the respective category
-5. Edit **category/taxonomy template** to show the content of the "Enhanced Category":
-`
-    //in category.php or taxonomy.php
-    <?php
-        global $enhanced_category;
-        //get enhanced category post and set it up as global current post
-        $enhanced_category->setup_ec_data();
-    ?>
-    <!-- enhanced category content -->
-    <?php the_post_thumbnail("medium"); ?>
 
-    <?php get_template_part( 'content', 'page' ); ?>
+**Usage options**
 
-    <!-- custom fields -->
-    <?php
-        get_post_custom();
-    ?>
+1. Display category/term page. Edit **category/taxonomy template** to show the content of the "Enhanced Category":
+	
+	   
+	
+		//in category.php or taxonomy.php
+	    <?php
+	        global $enhanced_category;
+	        //get enhanced category post and set it up as global current post
+	        $enhanced_category->setup_ec_data();
+	    ?>
+	    <!-- enhanced category content -->
+	    <?php the_post_thumbnail("medium"); ?>
+	
+	    <?php get_template_part( 'content', 'page' ); ?>
+	
+	    <!-- custom fields -->
+	    <?php
+	        get_post_custom();
+	    ?>
+	
+	    <?php
+	        // If comments are open or we have at least one comment, load up the comment template
+	        if ( comments_open() || get_comments_number() ) :
+	            comments_template();
+	        endif;
+	    ?>
+	
+1. Display a list of categories:
 
-    <?php
-        // If comments are open or we have at least one comment, load up the comment template
-        if ( comments_open() || get_comments_number() ) :
-            comments_template();
-        endif;
-    ?>
-`
+	
+		//$categories is presumed to be an already fetched array of categories/terms
+		foreach($categories as $category) {
+		    $GLOBALS['enhanced_category']->setup_ec_data($category->term_id);
+		    the_post_thumbnail('thumbnail');
+		}
+	 
 
 == Frequently Asked Questions ==
 
@@ -74,6 +89,18 @@ Enhanced Category Pages allows you to create custom category and term pages by m
 = What happens with *Enhanced Category* posts when the plugin is uninstalled? =
 
 *Enhanced Category* posts are deleted when the plugin is deleted using the WordPress plugin management page. Note: nothing is deleted when the plugin deactivated.
+
+= Can I use it to list any categories/terms? =
+
+Yes, you can pass the category/term id to `setup_ec_data` method like this (`$categories` is presumed to be an already fetched array of categories/terms):
+`
+foreach($categories as $category) {
+    $GLOBALS['enhanced_category']->setup_ec_data($category->term_id);
+    the_post_thumbnail('thumbnail');
+}
+`
+
+
 
 
 == Screenshots ==
