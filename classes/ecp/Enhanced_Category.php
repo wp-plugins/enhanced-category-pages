@@ -211,18 +211,20 @@ class Enhanced_Category extends WP_Custom_Post {
 		}
 	}
 
-	//gets global current category and setup the global post data
-	public function setup_ec_data() {
+	//gets global current category or category with given id and setup the global post data
+	public function setup_ec_data($cur_cat_id = null) {
 		global $withcomments, $post;
-		//get global category/term id
 
-		$query_var = get_query_var("taxonomy");
+		if (empty($cur_cat_id)) {
+			//get global category/term id
+			$query_var = get_query_var("taxonomy");
 
-		if ( empty($query_var) ) {
-			$cur_cat_id	= get_cat_id(single_cat_title("", false));
-		} else {
-			$term = get_term_by('slug', get_query_var("term"), $query_var);
-			$cur_cat_id = $term->term_id;
+			if ( empty($query_var) ) {
+				$cur_cat_id	= get_cat_id(single_cat_title("", false));
+			} else {
+				$term = get_term_by('slug', get_query_var("term"), $query_var);
+				$cur_cat_id = $term->term_id;
+			}
 		}
 
 		$ec_array = $this->get_by_category($cur_cat_id);
